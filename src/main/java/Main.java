@@ -1,5 +1,6 @@
 import org.apache.commons.io.IOUtils;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ public class Main {
     public static void main(String[] args) throws Exception{
         String output = (new Main()).readRawDataToString();
 
-        HashMap<String, HashMap<Float, Integer>> groceryList = new HashMap<>();
+        HashMap<String, HashMap<Float, Integer>> groceryList = new LinkedHashMap<>();
 
         String[] items = output.split("##");
         int exceptionCount = 0;
