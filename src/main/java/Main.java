@@ -1,9 +1,11 @@
 import org.apache.commons.io.IOUtils;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Main {
+
+   public static HashMap<String, String> leetSpeakMap = new HashMap<>(Map.of("0", "o", "1", "i", "3", "e", "5", "s", "7", "t"));
 
     public String readRawDataToString() throws Exception{
         ClassLoader classLoader = getClass().getClassLoader();
@@ -13,24 +15,50 @@ public class Main {
 
     public static void main(String[] args) throws Exception{
         String output = (new Main()).readRawDataToString();
-        System.out.printf("name:\tMilk \t\t seen: %d times\n", MatchingUtilities.matchMilkOccu(output));
-        System.out.println("============= \t \t =============");
-        System.out.printf("Price: \t 3.23\t\t seen: %d times\n", MatchingUtilities.matchMilkPrice323(output));
-        System.out.println("-------------\t\t -------------");
-        System.out.printf("Price:   1.23\t\t seen: %d time\n", MatchingUtilities.matchMilkPrice123(output));
-        System.out.printf("\nname:   Bread\t\t seen: %d times\n", MatchingUtilities.matchBreadOccu(output));
-        System.out.println("=============\t\t =============");
-        System.out.printf("Price:   1.23\t\t seen: %d times\n", MatchingUtilities.matchBreadPrice123(output));
-        System.out.println("-------------\t\t -------------\n");
-        System.out.printf("name: Cookies     \t seen: %d times\n", MatchingUtilities.matchCookiesOccu(output));
-        System.out.println("============= \t \t =============");
-        System.out.printf("Price:   2.25        seen: %d times\n", MatchingUtilities.matchCookiesPrice(output));
-        System.out.println("-------------\t\t -------------\n");
-        System.out.printf("name:  Apples     \t seen: %d times\n", MatchingUtilities.matchApplesOccu(output));
-        System.out.println("============= \t \t =============");
-        System.out.printf("Price:   0.25     \t seen: %d times\n", MatchingUtilities.matchApplesPrice25(output));
-        System.out.println("-------------\t\t -------------");
-        System.out.printf("Price:   0.23  \t \t seen: %d times\n", MatchingUtilities.matchApplesPrice23(output));
-        System.out.printf("\nErrors         \t \t seen: %d times", MatchingUtilities.matchItemWithoutPrice(output) + MatchingUtilities.matchItemWithoutName(output));
+
+        HashMap<String, HashMap<Float, Integer>> groceryList = new HashMap<>();
+
+        String[] items = output.split("##");
+        int exceptionCount = 0;
+        for (String eachItem : items) {
+            try {
+                String[] parts = eachItem.split(";");
+                String name = parts[0].chars().mapToObj(e -> {
+                    String parsedCharacter = String.valueOf(Character.valueOf((char)e));
+                    return leetSpeakMap.getOrDefault(parsedCharacter, parsedCharacter);
+                }).collect(Collectors.joining()).substring(parts[0].indexOf(":") + 1).toLowerCase();
+                Float parsedPrice = Float.parseFloat(parts[1].substring(parts[1].indexOf(":") + 1));
+
+                if (name.isEmpty()) {
+                    throw new Exception("!!JERKSON ERROR DETECTED!!: NAME INVALID");
+                }
+
+                if (groceryList.containsKey(name)) {
+                    if (groceryList.get(name).containsKey(parsedPrice)) {
+                        groceryList.get(name).put(parsedPrice, groceryList.get(name).get(parsedPrice) + 1);
+                        groceryList.put(name, groceryList.get(name));
+                    } else {
+                        groceryList.get(name).put(parsedPrice, 1);
+                    }
+                } else {
+                    groceryList.put(name, new HashMap<>(Map.of(parsedPrice, 1)));
+                }
+            } catch (Exception exception) {
+                exceptionCount++;
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (String eachKey : groceryList.keySet()) {
+            long sumOccurrences = groceryList.get(eachKey).values().stream().mapToInt(e -> e).sum();
+            sb.append(String.format("name: %7s\t\t seen: %d times\n", eachKey.substring(0,1).toUpperCase() + eachKey.substring(1).toLowerCase(), sumOccurrences));
+            sb.append("============= \t \t =============\n");
+            for (Float eachPrice : groceryList.get(eachKey).keySet()) {
+                sb.append(String.format("Price: \t %.2f\t\t seen: %d times\n", eachPrice, groceryList.get(eachKey).get(eachPrice)));
+            }
+            sb.append("-------------\t\t -------------\n\n");
+        }
+        sb.append(String.format("Errors         \t \t seen: %d times", exceptionCount));
+        System.out.println(sb);
     }
 }
