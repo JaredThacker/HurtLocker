@@ -52,12 +52,11 @@ public class Main {
         StringBuilder sb = new StringBuilder();
         for (String eachKey : groceryList.keySet()) {
             long sumOccurrences = groceryList.get(eachKey).values().stream().mapToInt(e -> e).sum();
-            sb.append(String.format("name: %7s\t\t seen: %d times\n", eachKey.substring(0,1).toUpperCase() + eachKey.substring(1).toLowerCase(), sumOccurrences));
-            sb.append("============= \t \t =============\n");
+            sb.append(String.format("name: %7s\t\t seen: %d times\n", eachKey.substring(0,1).toUpperCase() + eachKey.substring(1).toLowerCase(), sumOccurrences)).append("============= \t \t =============\n"); ;
             for (Float eachPrice : groceryList.get(eachKey).keySet()) {
-                sb.append(String.format("Price: \t %.2f\t\t seen: %d times\n", eachPrice, groceryList.get(eachKey).get(eachPrice)));
+                sb.append(String.format("Price: \t %.2f\t\t seen: %d times\n", eachPrice, groceryList.get(eachKey).get(eachPrice))).append("-------------\t\t -------------\n");
             }
-            sb.append("-------------\t\t -------------\n\n");
+            sb.append("\n");
         }
         sb.append(String.format("Errors         \t \t seen: %d times", exceptionCount));
         System.out.println(sb);
